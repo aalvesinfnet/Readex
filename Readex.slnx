@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../Readex.Verificacao/Readex.Verificacao.csproj" Id="b16dc740-836b-4876-8f55-f4cbae6f35c1" />
   <Project Path="Readex.csproj" />
 </Solution>
