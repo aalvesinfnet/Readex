@@ -1,0 +1,16 @@
+# Visual Studio and .NET build output
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Generated CSV demonstration output
+Readex/Dados/obras-copia.csv
+
+# Local environment settings
+.env
+.env.*
+!.env.example

@@ -1,0 +1,59 @@
+﻿@page
+@model Readex.Pages.IndexModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Readex - Demonstração CSV</title>
+</head>
+<body>
+    <h1>Readex - Demonstração CSV</h1>
+
+    <p>Ler obras, gravar uma cópia e ler a cópia.</p>
+
+    <form method="post">
+        <button type="submit">Executar demonstração CSV</button>
+    </form>
+
+    @if (Model.Mensagem is not null)
+    {
+        <p role="status">@Model.Mensagem</p>
+    }
+
+    @if (Model.Erro is not null)
+    {
+        <p role="alert">
+            Não foi possível concluir: @Model.Erro
+        </p>
+    }
+
+    <table>
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Gênero</th>
+                <th>Tipo</th>
+                <th>Destaque</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obra in Model.Obras)
+            {
+                <tr>
+                    <td>@obra.Titulo</td>
+                    <td>@obra.Autor</td>
+                    <td>@obra.Genero</td>
+                    <td>@obra.Tipo</td>
+                    <td>@(obra.Destaque ? "Sim" : "Não")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
