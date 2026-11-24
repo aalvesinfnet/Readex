@@ -1,0 +1,50 @@
+@page "/join"
+@model Readex.Pages.Account.JoinModel
+@{
+    ViewData["Title"] = "Join";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+}
+
+<section class="readex-account" aria-labelledby="join-title">
+    <h1 id="join-title">Create an account</h1>
+
+    <form class="account-form" method="post" asp-page="/Account/Join">
+        <div asp-validation-summary="ModelOnly" class="account-errors" role="alert"></div>
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <div class="account-field">
+            <label asp-for="Input.Username"></label>
+            <input asp-for="Input.Username" autocomplete="username" maxlength="30" required />
+            <span asp-validation-for="Input.Username"></span>
+        </div>
+
+        <div class="account-field">
+            <label asp-for="Input.Email"></label>
+            <input asp-for="Input.Email" autocomplete="email" maxlength="254" required />
+            <span asp-validation-for="Input.Email"></span>
+        </div>
+
+        <div class="account-field">
+            <label asp-for="Input.Password"></label>
+            <input asp-for="Input.Password" autocomplete="new-password" minlength="8" maxlength="128"
+                   aria-describedby="join-password-hint" required />
+            <small id="join-password-hint">Use at least 8 characters.</small>
+            <span asp-validation-for="Input.Password"></span>
+        </div>
+
+        <div class="account-field">
+            <label asp-for="Input.ConfirmPassword"></label>
+            <input asp-for="Input.ConfirmPassword" autocomplete="new-password" maxlength="128" required />
+            <span asp-validation-for="Input.ConfirmPassword"></span>
+        </div>
+
+        <button class="readex-button readex-button--primary" type="submit">Join</button>
+    </form>
+
+    <p class="account-switch">
+        Already a member? <a asp-page="/Account/SignIn" asp-route-returnUrl="@Model.ReturnUrl">Sign in</a>
+    </p>
+</section>

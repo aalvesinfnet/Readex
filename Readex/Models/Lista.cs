@@ -4,12 +4,16 @@ public class Lista
 {
     private readonly List<ItemLista> _itens = [];
 
-    public Guid Id { get; }
-    public Guid LeitorId { get; }
-    public string Nome { get; }
-    public TipoLista Tipo { get; }
+    public Guid Id { get; private set; }
+    public Guid LeitorId { get; private set; }
+    public string Nome { get; private set; } = "";
+    public TipoLista Tipo { get; private set; }
 
     public IReadOnlyList<ItemLista> Itens => _itens.AsReadOnly();
+
+    private Lista()
+    {
+    }
 
     public Lista(Guid id, Guid leitorId, string nome, TipoLista tipo)
     {

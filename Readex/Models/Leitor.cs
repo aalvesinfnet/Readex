@@ -9,19 +9,26 @@ public class Leitor
     private readonly List<Curtida> _curtidas = [];
     private readonly List<Favorito> _favoritos = [];
 
-    public Guid Id { get; }
-    public string NomeUsuario { get; }
-    public string Email { get; }
+    public Guid Id { get; private set; }
+    public string NomeUsuario { get; private set; } = "";
+    public string Email { get; private set; } = "";
+
+    internal string NomeUsuarioNormalizado { get; private set; } = "";
+    internal string EmailNormalizado { get; private set; } = "";
 
     internal string SenhaHash { get; private set; } = "";
 
-    public string NomeExibicao { get; private set; }
+    public string NomeExibicao { get; private set; } = "";
     public string? FotoUrl { get; private set; }
 
     public IReadOnlyList<Avaliacao> Avaliacoes => _avaliacoes.AsReadOnly();
     public IReadOnlyList<Lista> Listas => _listas.AsReadOnly();
     public IReadOnlyList<Curtida> Curtidas => _curtidas.AsReadOnly();
     public IReadOnlyList<Favorito> Favoritos => _favoritos.AsReadOnly();
+
+    private Leitor()
+    {
+    }
 
     internal Leitor(Guid id, string nomeUsuario, string email)
     {
@@ -41,6 +48,8 @@ public class Leitor
         Id = id;
         NomeUsuario = nomeUsuario.Trim();
         Email = email.Trim();
+        NomeUsuarioNormalizado = NomeUsuario.ToUpperInvariant();
+        EmailNormalizado = Email.ToUpperInvariant();
         NomeExibicao = NomeUsuario;
 
         _listas.Add(

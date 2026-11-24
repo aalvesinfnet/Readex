@@ -1,65 +1,63 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Readex.Infraestrutura;
 using Readex.Models;
 
 namespace Readex.Pages;
 
-public class IndexModel : PageModel {
-    private readonly string _pastaDados;
-    private readonly ObraCsv _csv = new();
-    public List<Obra> Obras { get; private set; } = [];
-    public string? Mensagem { get; private set; }
-    public string? Erro { get; private set; }
-    public IndexModel(IWebHostEnvironment ambiente) {
-        _pastaDados = Path.Combine(
-            ambiente.ContentRootPath,
-            "Dados"
-        );
+public sealed record ResultadoCatalogo(string Chave, string Titulo, string Autor, string CapaUrl);
+
+public class IndexModel : PageModel
+{
+    private readonly ReadexDbContext _banco;
+
+    public IndexModel(ReadexDbContext banco)
+    {
+        _banco = banco;
     }
 
-    public void OnGet() {
-        try {
-            Obras = _csv.Ler(
-                Path.Combine(_pastaDados, "obras.csv")
-            );
+    public IReadOnlyList<ResultadoCatalogo> Resultados { get; private set; } = [];
+    public IReadOnlyDictionary<string, Obra> ObrasPorSlug { get; private set; } =
+        new Dictionary<string, Obra>(StringComparer.OrdinalIgnoreCase);
+    public bool ExibindoCatalogo { get; private set; }
+    public string TituloCatalogo { get; private set; } = "Browse titles";
+
+    public async Task OnGetAsync(string? q, TipoObra? tipo, bool todos = false)
+    {
+        var termo = q?.Trim() ?? "";
+        if (tipo is { } tipoSolicitado && !Enum.IsDefined(tipoSolicitado))
+            tipo = null;
+
+        ExibindoCatalogo = todos || termo.Length > 0 || tipo.HasValue;
+
+        var consulta = _banco.Obras.AsNoTracking().Where(obra => obra.CapaUrl != null);
+        if (tipo is { } tipoFiltrado)
+            consulta = consulta.Where(obra => obra.Tipo == tipoFiltrado);
+
+        var obras = await consulta.ToListAsync(HttpContext.RequestAborted);
+        var obrasComCapa = obras.Where(obra => !string.IsNullOrWhiteSpace(obra.CapaUrl));
+
+        if (!ExibindoCatalogo)
+        {
+            ObrasPorSlug = obrasComCapa.Where(obra => !string.IsNullOrWhiteSpace(obra.Slug))
+                .ToDictionary(obra => obra.Slug!, StringComparer.OrdinalIgnoreCase);
+            return;
         }
-        catch (Exception erro) when (
-            erro is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or System.Text.DecoderFallbackException) {
-            Erro = erro.Message;
-        }
-    }
 
-    public void OnPost() {
-        try {
-            var origem = Path.Combine(
-                _pastaDados,
-                "obras.csv"
-            );
+        TituloCatalogo = termo.Length > 0 ? "Search results" : tipo switch
+        {
+            TipoObra.LIVRO => "Books",
+            TipoObra.HQ => "Comics",
+            TipoObra.MANGA => "Manga",
+            _ => "Browse titles"
+        };
 
-            var destino = Path.Combine(
-                _pastaDados,
-                "obras-copia.csv"
-            );
-
-            var lidas = _csv.Ler(origem);
-
-            _csv.Gravar(destino, lidas);
-
-            Obras = _csv.Ler(destino);
-
-            Mensagem =
-                $"{Obras.Count} obra(s) lida(s), gravada(s) e relida(s). " +
-                "Arquivo gerado: Dados/obras-copia.csv.";
-        }
-        catch (Exception erro) when (
-            erro is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or System.Text.DecoderFallbackException) {
-            Erro = erro.Message;
-        }
+        Resultados = obrasComCapa
+            .Where(obra => termo.Length == 0 || obra.CorrespondePesquisa(termo))
+            .OrderBy(obra => obra.Titulo, StringComparer.OrdinalIgnoreCase)
+            .Select(obra => new ResultadoCatalogo(
+                string.IsNullOrWhiteSpace(obra.Slug) ? obra.Id.ToString() : obra.Slug,
+                obra.Titulo, obra.Autor, obra.CapaUrl!))
+            .ToList();
     }
 }

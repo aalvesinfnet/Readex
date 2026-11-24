@@ -1,0 +1,165 @@
+@using System.Globalization
+@using Readex.Pages
+@using Readex.Models
+@model IReadOnlyDictionary<string, Obra>
+
+@{
+    var titulos = CatalogoDemonstracao.Obras.Where(obra => Model.ContainsKey(obra.Capa)).ToList();
+
+    var grupos = new[]
+    {
+        (Id: "books", Nome: "Books", Tipo: TipoObra.LIVRO),
+        (Id: "manga", Nome: "Manga", Tipo: TipoObra.MANGA),
+        (Id: "comics", Nome: "Comics", Tipo: TipoObra.HQ)
+    };
+
+    var listas = new (string Nome, string Autor, int Obras, string Curtidas, string[] Capas)[]
+    {
+        ("Quiet books for loud weeks", "@minareads", 24, "3,120",
+            ["piranesi", "the-remains-of-the-day", "frieren", "tomorrow-and-tomorrow"]),
+        ("Seinen essentials", "@druiz", 40, "2,480",
+            ["vagabond", "monster", "berserk", "frieren"]),
+        ("Comics that changed the medium", "@samw", 18, "1,906",
+            ["watchmen", "maus", "sandman", "saga"])
+    };
+}
+
+<div class="landing-activity">
+    <section class="landing-activity-section" aria-labelledby="weekly-title">
+        <div class="landing-activity-heading">
+            <h2 id="weekly-title">Popular this week</h2>
+            <span class="landing-activity-preview">Sample activity</span>
+            <a class="landing-activity-link" asp-page="/Index" asp-route-todos="true"
+               asp-fragment="catalog">Browse all</a>
+        </div>
+
+        <ul class="landing-weekly-grid" role="list">
+            @foreach (var obra in titulos.OrderByDescending(obra => obra.Leitores).Take(6))
+            {
+                var catalogada = Model[obra.Capa];
+                <li>
+                    <article class="landing-card">
+                        <a class="landing-card-cover" asp-page="/Title" asp-route-chave="@obra.Capa"
+                           aria-label="View @catalogada.Titulo">
+                            <img src="@Url.Content(catalogada.CapaUrl)" asp-append-version="true"
+                                 alt="" loading="lazy" width="160" height="240" />
+                        </a>
+                        <h3 class="landing-card-title">@catalogada.Titulo</h3>
+                        <div class="landing-activity-stats">
+                            <span>
+                                <span aria-hidden="true">★</span>
+                                <span class="visually-hidden">Rating</span>
+                                @obra.Nota.ToString("0.0", CultureInfo.InvariantCulture)
+                            </span>
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                                    <circle cx="12" cy="12" r="2" />
+                                </svg>
+                                <span class="visually-hidden">Readers</span>
+                                @(obra.Leitores)k
+                            </span>
+                        </div>
+                    </article>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <section class="landing-activity-section" aria-labelledby="rated-title">
+        <div class="landing-activity-heading">
+            <h2 id="rated-title">Highest rated</h2>
+            <div class="landing-rating-tabs" role="tablist" aria-label="Title type">
+                @foreach (var grupo in grupos)
+                {
+                    var ativo = grupo.Id == "manga";
+                    var painelId = $"rated-{grupo.Id}";
+                    <button class="landing-rating-tab @(ativo ? "active" : "")" type="button"
+                            id="@(painelId + "-tab")" data-bs-toggle="tab" data-bs-target="@("#" + painelId)"
+                            role="tab" aria-controls="@painelId" aria-selected="@(ativo ? "true" : "false")"
+                            tabindex="@(ativo ? 0 : -1)">@grupo.Nome</button>
+                }
+            </div>
+        </div>
+
+        <div class="tab-content">
+            @foreach (var grupo in grupos)
+            {
+                var painelId = $"rated-{grupo.Id}";
+                var ativo = grupo.Id == "manga";
+                var posicao = 0;
+
+                <div class="tab-pane @(ativo ? "active" : "")" id="@painelId" role="tabpanel"
+                     aria-labelledby="@(painelId + "-tab")" tabindex="0">
+                    <ol class="landing-ranked-grid" role="list">
+                        @foreach (var obra in titulos.Where(obra => Model[obra.Capa].Tipo == grupo.Tipo)
+                            .OrderByDescending(obra => obra.Nota).ThenByDescending(obra => obra.Leitores))
+                        {
+                            var catalogada = Model[obra.Capa];
+                            posicao++;
+                            <li class="landing-ranked-item">
+                                <span class="landing-rank" aria-hidden="true">@posicao</span>
+                                <article class="landing-card">
+                                    <a class="landing-card-cover" asp-page="/Title" asp-route-chave="@obra.Capa"
+                                       aria-label="View @catalogada.Titulo">
+                                        <img src="@Url.Content(catalogada.CapaUrl)" asp-append-version="true"
+                                             alt="" loading="lazy" width="160" height="240" />
+                                    </a>
+                                    <h3 class="landing-card-title">@catalogada.Titulo</h3>
+                                    <div class="landing-activity-stats">
+                                        <span>
+                                            <span aria-hidden="true">★</span>
+                                            <span class="visually-hidden">Rating</span>
+                                            @obra.Nota.ToString("0.0", CultureInfo.InvariantCulture)
+                                        </span>
+                                    </div>
+                                </article>
+                            </li>
+                        }
+                    </ol>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section id="lists" class="landing-activity-section" aria-labelledby="lists-title">
+        <div class="landing-activity-heading">
+            <h2 id="lists-title">Popular lists</h2>
+        </div>
+
+        <div class="landing-lists-grid">
+            @foreach (var lista in listas)
+            {
+                <article class="landing-list-card">
+                    <div class="landing-list-covers">
+                        @foreach (var capa in lista.Capas)
+                        {
+                            if (!Model.TryGetValue(capa, out var obra))
+                                continue;
+
+                            <a asp-page="/Title" asp-route-chave="@capa" aria-label="View @obra.Titulo">
+                                <img src="@Url.Content(obra.CapaUrl)" asp-append-version="true"
+                                     alt="" loading="lazy" width="80" height="120" />
+                            </a>
+                        }
+                    </div>
+                    <h3 class="landing-list-title">@lista.Nome</h3>
+                    <p class="landing-list-meta">
+                        <span>@lista.Autor</span>
+                        <span>· @lista.Obras titles</span>
+                        <span>
+                            ·
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                 stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20.8 8.3a4.7 4.7 0 0 0-8-3.3l-.8.9-.8-.9a4.7 4.7 0 0 0-6.7 6.7l7.5 7.5 7.5-7.5a4.7 4.7 0 0 0 1.3-3.4Z" />
+                            </svg>
+                            <span class="visually-hidden">Likes</span>
+                            @lista.Curtidas
+                        </span>
+                    </p>
+                </article>
+            }
+        </div>
+    </section>
+</div>

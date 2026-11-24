@@ -10,6 +10,9 @@ obj/
 # Generated CSV demonstration output
 Readex/Dados/obras-copia.csv
 
+# Local SQLite database and its journal files
+Readex/Dados/readex.db*
+
 # Local environment settings
 .env
 .env.*

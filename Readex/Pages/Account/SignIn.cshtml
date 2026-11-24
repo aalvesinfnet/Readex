@@ -1,0 +1,41 @@
+@page "/sign-in"
+@model Readex.Pages.Account.SignInModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+}
+
+<section class="readex-account" aria-labelledby="sign-in-title">
+    <h1 id="sign-in-title">Sign in to Readex</h1>
+
+    @if (Model.AccountMessage is { } message)
+    {
+        <p class="account-status" role="status">@message</p>
+    }
+
+    <form class="account-form" method="post" asp-page="/Account/SignIn">
+        <div asp-validation-summary="ModelOnly" class="account-errors" role="alert"></div>
+        <input type="hidden" asp-for="ReturnUrl" />
+
+        <div class="account-field">
+            <label asp-for="Input.Username"></label>
+            <input asp-for="Input.Username" autocomplete="username" maxlength="30" required />
+            <span asp-validation-for="Input.Username"></span>
+        </div>
+
+        <div class="account-field">
+            <label asp-for="Input.Password"></label>
+            <input asp-for="Input.Password" autocomplete="current-password" maxlength="128" required />
+            <span asp-validation-for="Input.Password"></span>
+        </div>
+
+        <button class="readex-button readex-button--primary" type="submit">Sign in</button>
+    </form>
+
+    <p class="account-switch">
+        New to Readex? <a asp-page="/Account/Join" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
+    </p>
+</section>

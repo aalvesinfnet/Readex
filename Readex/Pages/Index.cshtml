@@ -1,59 +1,111 @@
-﻿@page
+@page
 @model Readex.Pages.IndexModel
+@using Readex.Pages
+
 @{
-    Layout = null;
+    ViewData["Title"] = Model.ExibindoCatalogo ? Model.TituloCatalogo : "Home";
+    string[] capasDaAbertura = ["vagabond", "piranesi", "saga", "frieren", "sandman"];
 }
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Readex - Demonstração CSV</title>
-</head>
-<body>
-    <h1>Readex - Demonstração CSV</h1>
-
-    <p>Ler obras, gravar uma cópia e ler a cópia.</p>
-
-    <form method="post">
-        <button type="submit">Executar demonstração CSV</button>
-    </form>
-
-    @if (Model.Mensagem is not null)
+<div class="readex-landing">
+    @if (!Model.ExibindoCatalogo)
     {
-        <p role="status">@Model.Mensagem</p>
-    }
+        <section class="landing-hero" aria-labelledby="landing-title">
+            <div class="landing-copy">
+                <p class="landing-kicker">Books · Manga · Comics</p>
+                <h1 id="landing-title" class="landing-title">
+                    Remember every page <em>you've turned.</em>
+                </h1>
+                <p class="landing-intro">
+                    Readex is a reading journal for all of it — the novel on your nightstand,
+                    the manga you binge on the train, the comic run you've followed for a decade.
+                </p>
 
-    @if (Model.Erro is not null)
+                <div class="landing-actions">
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a class="readex-button readex-button--primary" asp-page="/Account/Join">
+                            Start your journal — it's free
+                        </a>
+                    }
+                    <a class="readex-button readex-button--outline" asp-page="/Index"
+                       asp-route-todos="true" asp-fragment="catalog">Browse titles</a>
+                </div>
+
+                <ul class="landing-features" role="list">
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 7v13M3 4h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5v13h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3z" />
+                        </svg>
+                        Track books and series in one place
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-3-5.5 3 1-6.2L3 9.6l6.2-.9z" />
+                        </svg>
+                        Rate your reads on a five-star scale
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20.8 8.3a4.7 4.7 0 0 0-8-3.3l-.8.9-.8-.9a4.7 4.7 0 0 0-6.7 6.7l7.5 7.5 7.5-7.5a4.7 4.7 0 0 0 1.3-3.4Z" />
+                        </svg>
+                        Keep your favorite stories close
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 6h15M4 12h10M4 18h8m7-4v7m-3.5-3.5h7" />
+                        </svg>
+                        Build lists and keep a want-to-read shelf
+                    </li>
+                </ul>
+            </div>
+
+            <div class="landing-cover-stack">
+                @foreach (var capa in capasDaAbertura)
+                {
+                    if (!Model.ObrasPorSlug.TryGetValue(capa, out var obra))
+                        continue;
+
+                    <a asp-page="/Title" asp-route-chave="@capa" aria-label="View @obra.Titulo">
+                        <img src="@Url.Content(obra.CapaUrl)" asp-append-version="true"
+                             alt="" width="160" height="240" />
+                    </a>
+                }
+            </div>
+        </section>
+        <partial name="_HomeActivityPreview" model="Model.ObrasPorSlug" />
+    }
+    else
     {
-        <p role="alert">
-            Não foi possível concluir: @Model.Erro
-        </p>
-    }
+        <section id="catalog" class="landing-catalog" aria-labelledby="catalog-heading">
+            <h1 id="catalog-heading" class="landing-catalog-heading">@Model.TituloCatalogo</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Autor</th>
-                <th>Gênero</th>
-                <th>Tipo</th>
-                <th>Destaque</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var obra in Model.Obras)
+            @if (Model.Resultados.Count == 0)
             {
-                <tr>
-                    <td>@obra.Titulo</td>
-                    <td>@obra.Autor</td>
-                    <td>@obra.Genero</td>
-                    <td>@obra.Tipo</td>
-                    <td>@(obra.Destaque ? "Sim" : "Não")</td>
-                </tr>
+                <p class="landing-empty">No titles found.</p>
             }
-        </tbody>
-    </table>
-</body>
-</html>
+            else
+            {
+                <ul class="landing-grid" role="list">
+                    @foreach (var obra in Model.Resultados)
+                    {
+                        <li>
+                            <article class="landing-card">
+                                <a class="landing-card-cover" asp-page="/Title" asp-route-chave="@obra.Chave"
+                                   aria-label="View @obra.Titulo">
+                                    <img src="@Url.Content(obra.CapaUrl)" alt="" loading="lazy" />
+                                </a>
+                                <h2 class="landing-card-title">@obra.Titulo</h2>
+                                <p class="landing-card-author">@obra.Autor</p>
+                            </article>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</div>

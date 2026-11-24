@@ -1,0 +1,92 @@
+.readex-account {
+  width: min(100%, 27rem);
+  margin: clamp(2rem, 8vw, 5rem) auto 0;
+  padding: clamp(1.25rem, 5vw, 2rem);
+  border: 1px solid var(--readex-border);
+  border-radius: 0.75rem;
+  background-color: var(--readex-card);
+}
+
+.readex-account h1 {
+  margin: 0 0 1.5rem;
+  color: var(--readex-text);
+  font: 400 clamp(2rem, 5vw, 2.625rem) / 1.05 var(--readex-serif);
+}
+
+.account-form,
+.account-field {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-field {
+  gap: 0.375rem;
+}
+
+.account-field label {
+  font-weight: 500;
+}
+
+.account-field input {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--readex-input);
+  border-radius: 0.5rem;
+  background-color: var(--readex-bg);
+  color: var(--readex-text);
+}
+
+.account-field input:focus-visible {
+  outline-offset: 1px;
+}
+
+.account-field small,
+.account-switch {
+  color: var(--readex-muted);
+  font-size: 0.875rem;
+}
+
+.account-field .input-validation-error {
+  border-color: #e78c90;
+}
+
+.account-errors,
+.account-field .field-validation-error {
+  color: #f4a5a8;
+  font-size: 0.875rem;
+}
+
+.account-errors ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-errors.validation-summary-valid,
+.account-field .field-validation-valid {
+  display: none;
+}
+
+.account-form > .readex-button {
+  min-height: 2.75rem;
+  margin-top: 0.25rem;
+}
+
+.account-status {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--readex-input);
+  border-radius: 0.5rem;
+  color: var(--readex-primary);
+  font-size: 0.875rem;
+}
+
+.account-switch {
+  margin: 1.5rem 0 0;
+}
+
+.account-switch a {
+  color: var(--readex-primary);
+  text-underline-offset: 0.15em;
+}

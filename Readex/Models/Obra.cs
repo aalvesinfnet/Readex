@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Readex.Models;
 
@@ -22,6 +22,16 @@ public class Obra
     public string? CapaUrl { get; set; }
 
     public bool Destaque { get; set; }
+
+    [StringLength(100)]
+    public string? Slug { get; set; }
+
+    public int? Ano { get; set; }
+
+    [StringLength(80)]
+    public string? Formato { get; set; }
+
+    public string? Sinopse { get; set; }
 
     public void Validar()
     {

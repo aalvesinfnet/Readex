@@ -1,52 +1,81 @@
-﻿<!DOCTYPE html>
+@{
+    var paginaAtual = ViewContext.RouteData.Values["page"]?.ToString();
+    var retornoConta = paginaAtual?.StartsWith("/Account/", StringComparison.OrdinalIgnoreCase) == true
+        ? null
+        : Context.Request.PathBase.Add(Context.Request.Path).ToUriComponent()
+            + Context.Request.QueryString.ToUriComponent();
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Readex</title>
-    <script type="importmap"></script>
+    <meta name="theme-color" content="#0d1013" />
+    <title>@ViewData["Title"] · Readex</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Readex.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Readex</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <header class="readex-header">
+        <div class="readex-shell readex-header-inner">
+            <a class="readex-brand" asp-page="/Index" aria-label="Readex home">
+                <span class="readex-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+                <span>Readex</span>
+            </a>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Readex - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            <nav class="readex-nav" aria-label="Main navigation">
+                <a asp-page="/Index" asp-route-tipo="LIVRO" asp-fragment="catalog">Books</a>
+                <a asp-page="/Index" asp-route-tipo="MANGA" asp-fragment="catalog">Manga</a>
+                <a asp-page="/Index" asp-route-tipo="HQ" asp-fragment="catalog">Comics</a>
+                <a asp-page="/Index" asp-fragment="lists">Lists</a>
+            </nav>
+
+            <div class="readex-header-actions">
+                <form class="readex-search" asp-page="/Index" asp-fragment="catalog" method="get" role="search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5" />
+                        <path d="m16 16 4 4" />
+                    </svg>
+                    <input name="q" type="search" aria-label="Search titles, authors or genres"
+                           placeholder="Search titles, authors…" value="@(Context.Request.Query["q"].ToString())" />
+                </form>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="readex-account-session">
+                        <span class="readex-account-name" title="@(User.Identity.Name)">@User.Identity.Name</span>
+                        <form asp-page="/Account/SignOut" method="post">
+                            <button class="readex-sign-in" type="submit">Sign out</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <a class="readex-sign-in" asp-page="/Account/SignIn" asp-route-returnUrl="@retornoConta">Sign in</a>
+                    <a class="readex-button readex-button--primary" asp-page="/Account/Join"
+                       asp-route-returnUrl="@retornoConta">Join</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="readex-shell readex-main">
+        @RenderBody()
+    </main>
+
+    <footer class="readex-footer">
+        <div class="readex-shell readex-footer-inner">
+            <p><span class="readex-brand">Readex</span> · Books, manga and comics.</p>
+            <a asp-page="/Index" asp-route-todos="true" asp-fragment="catalog">Browse titles</a>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

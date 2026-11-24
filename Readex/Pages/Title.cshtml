@@ -1,0 +1,213 @@
+@page "/title/{chave}"
+@model Readex.Pages.TitleModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Model.Titulo;
+    var previa = Model.Previa;
+    var corCapa = previa?.CorCapa ?? "#233440";
+    const string estrela = "m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-3-5.5 3 1-6.2L3 9.6l6.2-.9z";
+
+    string FormatarTotal(int total) => total >= 1000
+        ? (total / 1000m).ToString(total >= 100_000 ? "0" : "0.0", CultureInfo.InvariantCulture) + "k"
+        : total.ToString(CultureInfo.InvariantCulture);
+
+    string Porcentagem(decimal valor) => valor.ToString("0.##", CultureInfo.InvariantCulture) + "%";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/title-details.css" asp-append-version="true" />
+}
+
+<article class="title-detail" style="--title-detail-accent: @corCapa" aria-labelledby="title-heading">
+    <div class="title-detail-grid">
+        <div class="title-detail-media">
+            <figure class="title-detail-cover">
+                @if (Model.CapaUrl is { } capaUrl)
+                {
+                    <img src="@capaUrl" alt="Cover of @Model.Titulo" decoding="async" />
+                }
+                else
+                {
+                    <span class="title-detail-placeholder" aria-hidden="true">@Model.Titulo</span>
+                }
+            </figure>
+
+            @if (previa is not null)
+            {
+                <dl class="title-detail-counts" aria-label="Sample reader activity">
+                    <div>
+                        <dt>readers</dt>
+                        <dd>@FormatarTotal(previa.Leitores * 1000)</dd>
+                    </div>
+                    <div>
+                        <dt>ratings</dt>
+                        <dd>@FormatarTotal(previa.QuantidadeAvaliacoes)</dd>
+                    </div>
+                </dl>
+            }
+        </div>
+
+        <div class="title-detail-info">
+            <p class="title-detail-type">@Model.Tipo</p>
+            <h1 id="title-heading" class="title-detail-heading">
+                @Model.Titulo
+                @if (Model.Ano is { } ano)
+                {
+                    <span class="title-detail-year">@ano</span>
+                }
+            </h1>
+            <p class="title-detail-author">by <span>@Model.Autor</span></p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Sinopse))
+            {
+                <p class="title-detail-synopsis">@Model.Sinopse</p>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.Formato) || Model.Generos.Count > 0)
+            {
+                <div class="title-detail-meta">
+                    @if (!string.IsNullOrWhiteSpace(Model.Formato))
+                    {
+                        <span>@Model.Formato</span>
+                        @if (Model.Generos.Count > 0)
+                        {
+                            <span aria-hidden="true">·</span>
+                        }
+                    }
+
+                    @if (Model.Generos.Count > 0)
+                    {
+                        <ul class="title-detail-genres" role="list" aria-label="Genres">
+                            @foreach (var genero in Model.Generos)
+                            {
+                                <li>@genero</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        </div>
+
+        <aside class="title-detail-side" aria-label="Reading and ratings">
+            <div class="title-detail-panel" role="group" aria-label="Reading actions preview">
+                <div class="title-detail-actions">
+                    <button type="button" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 7v13M3 4h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5v7M3 4v13h5a4 4 0 0 1 4 4m3-4 2 2 5-5" />
+                        </svg>
+                        Mark read
+                    </button>
+                    <button type="button" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20.8 8.3a4.7 4.7 0 0 0-8-3.3l-.8.9-.8-.9a4.7 4.7 0 0 0-6.7 6.7l7.5 7.5 7.5-7.5a4.7 4.7 0 0 0 1.3-3.4Z" />
+                        </svg>
+                        Like
+                    </button>
+                    <button type="button" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 19V5a2 2 0 0 1 2-2h12v18H7a2 2 0 0 1 0-4h12M10 3v8l2-2 2 2V3" />
+                        </svg>
+                        Want to read
+                    </button>
+                </div>
+
+                <div class="title-detail-rate" role="group" aria-label="Rate @Model.Titulo">
+                    <p>Rate</p>
+                    <div class="title-detail-rate-stars">
+                        @for (var i = 1; i <= 5; i++)
+                        {
+                            <button type="button" disabled aria-label="@i out of 5 stars">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="@estrela" />
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="title-detail-list-action">
+                    <button type="button" disabled>Add to a list</button>
+                </div>
+            </div>
+
+            @if (previa is not null)
+            {
+                var nota = previa.Nota.ToString("0.0", CultureInfo.InvariantCulture);
+                var maior = Math.Max(1, previa.Distribuicao.Max());
+
+                <section class="title-detail-ratings" aria-labelledby="ratings-heading">
+                    <div class="title-detail-section-heading">
+                        <h2 id="ratings-heading">Ratings</h2>
+                        <span class="title-detail-average">@nota</span>
+                    </div>
+
+                    <div class="title-detail-graph">
+                        <span aria-hidden="true">1★</span>
+                        <ul class="title-detail-bars" role="list" aria-label="Sample rating distribution">
+                            @for (var i = 0; i < previa.Distribuicao.Count; i++)
+                            {
+                                var quantidade = previa.Distribuicao[i];
+                                var altura = Porcentagem(Math.Max(4m, quantidade * 100m / maior));
+                                var descricao = $"{i + 1} star: {quantidade}%";
+                                <li style="--bar-height: @altura" title="@descricao">
+                                    <span class="visually-hidden">@descricao</span>
+                                </li>
+                            }
+                        </ul>
+                        <span aria-hidden="true">5★</span>
+                    </div>
+
+                    <div class="title-detail-score-stars" role="img" aria-label="Rated @nota out of 5">
+                        @for (var i = 0; i < 5; i++)
+                        {
+                            var preenchimento = Porcentagem(Math.Clamp(previa.Nota - i, 0m, 1m) * 100);
+                            <span aria-hidden="true">★<span style="--star-fill: @preenchimento">★</span></span>
+                        }
+                    </div>
+                    <small class="title-detail-sample">Sample activity</small>
+                </section>
+            }
+        </aside>
+    </div>
+
+    @if (Model.Relacionadas.Count > 0)
+    {
+        <section class="title-detail-related" aria-labelledby="related-heading">
+            <div class="title-detail-section-heading">
+                <h2 id="related-heading">Readers also enjoyed</h2>
+                @if (previa is null)
+                {
+                    <small class="title-detail-sample">Sample activity</small>
+                }
+            </div>
+            <ul class="title-detail-related-grid" role="list">
+                @foreach (var obra in Model.Relacionadas)
+                {
+                    <li>
+                        <article class="landing-card">
+                            <a class="landing-card-cover" asp-page="/Title" asp-route-chave="@obra.Capa"
+                               aria-label="View @obra.Titulo">
+                                <img src="@Url.Content(obra.CapaUrl)" asp-append-version="true"
+                                     alt="" loading="lazy" width="160" height="240" />
+                            </a>
+                            <h3 class="landing-card-title">@obra.Titulo</h3>
+                            <div class="landing-activity-stats">
+                                <span>
+                                    <span aria-hidden="true">★</span>
+                                    <span class="visually-hidden">Rating</span>
+                                    @obra.Nota.ToString("0.0", CultureInfo.InvariantCulture)
+                                </span>
+                                <span>@FormatarTotal(obra.Leitores * 1000) readers</span>
+                            </div>
+                        </article>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</article>
